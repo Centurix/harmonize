@@ -4,7 +4,12 @@ from __future__ import print_function
 import sys
 import requests
 import os
+import pprint
 import datetime
+import feedparser
+from time import mktime
+from lxml import etree
+import string
 
 __description__ = 'Harmontown grabber.'
 __author__ = 'Chris Read'
@@ -22,8 +27,26 @@ http://download.harmontown.com/video/harmontown-2015-01-25-final.mp4
 HARMONTOWN_URL = 'http://download.harmontown.com/video'
 HARMONTOWN_DIRECTORY = 'temp'
 HARMONTOWN_START = datetime.date(2015, 1, 25)
+HARMONTOWN_FEED = 'http://www.harmontown.com'
+
+TVDB_API_KEY = '475D69C4508A56E1'
+TVDB_SERIES_ID = '301912'
+TVDB_URL = 'http://thetvdb.com/api'
+
+"""
+http://thetvdb.com/api/475D69C4508A56E1/mirrors.xml
+http://thetvdb.com/api/GetEpisodeByAirDate.php?apikey=475D69C4508A56E1&seriesid=301912&airdate=2015-01-25
+<mirrorpath>/api/GetEpisodeByAirDate.php?apikey=475D69C4508A56E1&seriesid=301912&airdate=2015-01-25
+"""
 
 delta = datetime.timedelta(days=1)
+max_delta = datetime.timedelta(days=6)
+
+
+def format_filename(s):
+    valid_chars = "-_.() %s%s" % (string.ascii_letters, string.digits)
+    filename = ''.join(c for c in s if c in valid_chars)
+    return filename
 
 
 def main():
@@ -36,13 +59,35 @@ def main():
     end_date = datetime.datetime.now().date()
     start_date += delta
     while start_date <= end_date:
+        """
+        This needs to be Harmontown - S01E195 - What did you do to Norman Lear?.mp4
+        """
         file_name = 'harmontown-%s-final.mp4' % start_date
         request = requests.get('%s/%s' % (HARMONTOWN_URL, file_name), stream=True)
         if request.ok:
-            print(start_date)
+            print('Found an episode: %s, downloading...' % file_name)
+            episode_name = '%s' % start_date
+            episode_number = '%s' % start_date
+
+            tvdb_info = requests.get(
+                '%s/GetEpisodeByAirDate.php' % TVDB_URL,
+                params={
+                    'apikey': TVDB_API_KEY,
+                    'seriesid': TVDB_SERIES_ID,
+                    'airdate': start_date
+                }
+            )
+            if tvdb_info.ok:
+                root = etree.fromstring(tvdb_info.content)
+                if len(root.xpath('.//EpisodeName')) > 0:
+                    episode_name = root.xpath('.//EpisodeName')[0].text
+                if len(root.xpath('.//EpisodeNumber')) > 0:
+                    episode_number = root.xpath('.//EpisodeNumber')[0].text
+
+            out_file_name = 'Harmontown - S01E%s - %s.mp4' % (episode_number, episode_name)
             size = int(request.headers['content-length'])
             bytes_received = 0
-            with open(os.path.join(HARMONTOWN_DIRECTORY, file_name), 'wb') as handle:
+            with open(os.path.join(HARMONTOWN_DIRECTORY, out_file_name), 'wb') as handle:
                 for block in request.iter_content(1024):
                     print('Written %d Kb of %d Kb (%.2f%% complete)' % (
                         bytes_received / 1024,
