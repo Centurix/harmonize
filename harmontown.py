@@ -34,6 +34,7 @@ def main():
     except IOError as ie:
         print('No last episode found, starting from the beginning')
     end_date = datetime.datetime.now().date()
+    start_date += delta
     while start_date <= end_date:
         file_name = 'harmontown-%s-final.mp4' % start_date
         request = requests.get('%s/%s' % (HARMONTOWN_URL, file_name), stream=True)
