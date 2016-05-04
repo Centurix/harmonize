@@ -101,8 +101,9 @@ def main():
                         handle.write(block)
 
             with open('last_date', 'w') as handle:
-                handle.write(start_date.strftime('%Y-%m-%d'))
-                handle.write(str(episode_number))
+                handle.write('%s\n%s\n' % (start_date.strftime('%Y-%m-%d'), str(episode_number)))
+
+            episode_number += 1
         start_date += delta
 
     return EXIT_OK
