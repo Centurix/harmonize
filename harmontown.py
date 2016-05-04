@@ -26,7 +26,8 @@ http://download.harmontown.com/video/harmontown-2015-01-25-final.mp4
 
 HARMONTOWN_URL = 'http://download.harmontown.com/video'
 HARMONTOWN_DIRECTORY = 'temp'
-HARMONTOWN_START = datetime.date(2015, 1, 25)
+HARMONTOWN_START = datetime.date(2016, 4, 10)
+HARMONTOWN_START_EPISODE = 193
 HARMONTOWN_FEED = 'http://www.harmontown.com'
 
 TVDB_API_KEY = '475D69C4508A56E1'
@@ -51,9 +52,11 @@ def format_filename(s):
 
 def main():
     start_date = HARMONTOWN_START
+    episode_number = HARMONTOWN_START_EPISODE
     try:
         with open('last_date', 'r') as handle:
             start_date = datetime.datetime.strptime(handle.readline(), '%Y-%m-%d').date()
+            episide_number = int(handle.readline())
     except IOError as ie:
         print('No last episode found, starting from the beginning')
     end_date = datetime.datetime.now().date()
@@ -66,8 +69,7 @@ def main():
         request = requests.get('%s/%s' % (HARMONTOWN_URL, file_name), stream=True)
         if request.ok:
             print('Found an episode: %s, downloading...' % file_name)
-            episode_name = '%s' % start_date
-            episode_number = '%s' % start_date
+            episode_name = 'Unknown'
 
             tvdb_info = requests.get(
                 '%s/GetEpisodeByAirDate.php' % TVDB_URL,
@@ -82,23 +84,25 @@ def main():
                 if len(root.xpath('.//EpisodeName')) > 0:
                     episode_name = root.xpath('.//EpisodeName')[0].text
                 if len(root.xpath('.//EpisodeNumber')) > 0:
-                    episode_number = root.xpath('.//EpisodeNumber')[0].text
+                    episode_number = int(root.xpath('.//EpisodeNumber')[0].text)
 
-            out_file_name = 'Harmontown - S01E%s - %s.mp4' % (episode_number, episode_name)
+            out_file_name = 'Harmontown - S01E%d.mp4' % episode_number
             size = int(request.headers['content-length'])
             bytes_received = 0
-            with open(os.path.join(HARMONTOWN_DIRECTORY, out_file_name), 'wb') as handle:
-                for block in request.iter_content(1024):
-                    print('Written %d Kb of %d Kb (%.2f%% complete)' % (
-                        bytes_received / 1024,
-                        size / 1024,
-                        float(bytes_received) / float(size) * 100
-                    ), end="\r")
-                    bytes_received += 1024
-                    handle.write(block)
+            if not os.path.isfile(os.path.join(HARMONTOWN_DIRECTORY, out_file_name)):
+                with open(os.path.join(HARMONTOWN_DIRECTORY, out_file_name), 'wb') as handle:
+                    for block in request.iter_content(1024):
+                        print('Written %d Kb of %d Kb (%.2f%% complete)' % (
+                            bytes_received / 1024,
+                            size / 1024,
+                            float(bytes_received) / float(size) * 100
+                        ), end="\r")
+                        bytes_received += 1024
+                        handle.write(block)
 
             with open('last_date', 'w') as handle:
                 handle.write(start_date.strftime('%Y-%m-%d'))
+                handle.write(str(episode_number))
         start_date += delta
 
     return EXIT_OK
