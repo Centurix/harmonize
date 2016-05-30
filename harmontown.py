@@ -25,7 +25,7 @@ http://download.harmontown.com/video/harmontown-2015-01-25-final.mp4
 """
 
 HARMONTOWN_URL = 'http://download.harmontown.com/video'
-HARMONTOWN_DIRECTORY = 'temp'
+HARMONTOWN_DIRECTORY = '/media/TV/Clean/Comedy/Harmontown/Season 01'
 HARMONTOWN_START = datetime.date(2016, 4, 10)
 HARMONTOWN_START_EPISODE = 193
 HARMONTOWN_FEED = 'http://www.harmontown.com'
@@ -55,8 +55,9 @@ def main():
     episode_number = HARMONTOWN_START_EPISODE
     try:
         with open('last_date', 'r') as handle:
-            start_date = datetime.datetime.strptime(handle.readline(), '%Y-%m-%d').date()
-            episide_number = int(handle.readline())
+            start_date = datetime.datetime.strptime(handle.readline()[:10], '%Y-%m-%d').date()
+            episode_number = int(handle.readline())
+            print('Last date: %s, Last episode: %d' % (start_date, episode_number))
     except IOError as ie:
         print('No last episode found, starting from the beginning')
     end_date = datetime.datetime.now().date()
@@ -66,6 +67,7 @@ def main():
         This needs to be Harmontown - S01E195 - What did you do to Norman Lear?.mp4
         """
         file_name = 'harmontown-%s-final.mp4' % start_date
+        print('Checking %s/%s' % (HARMONTOWN_URL, file_name))
         request = requests.get('%s/%s' % (HARMONTOWN_URL, file_name), stream=True)
         if request.ok:
             print('Found an episode: %s, downloading...' % file_name)
@@ -101,8 +103,8 @@ def main():
                         handle.write(block)
 
             with open('last_date', 'w') as handle:
-                handle.write(start_date.strftime('%Y-%m-%d'))
-                handle.write(str(episode_number))
+                handle.write('%s\n%s\n' % (start_date.strftime('%Y-%m-%d'), str(episode_number)))
+            episode_number += 1
         start_date += delta
 
     return EXIT_OK
