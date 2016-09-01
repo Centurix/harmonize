@@ -60,6 +60,7 @@ def main():
             print('Last date: %s, Last episode: %d' % (start_date, episode_number))
     except IOError as ie:
         print('No last episode found, starting from the beginning')
+    start_episode_number = episode_number
     end_date = datetime.datetime.now().date()
     start_date += delta
     while start_date <= end_date:
@@ -87,24 +88,35 @@ def main():
                     episode_name = root.xpath('.//EpisodeName')[0].text
                 if len(root.xpath('.//EpisodeNumber')) > 0:
                     episode_number = int(root.xpath('.//EpisodeNumber')[0].text)
+                print('Found TVDB info: %s (%s)' % (episode_name, episode_number))
+            else:
+                print('No TVDB info')
 
-            out_file_name = 'Harmontown - S01E%d.mp4' % episode_number
-            size = int(request.headers['content-length'])
-            bytes_received = 0
-            if not os.path.isfile(os.path.join(HARMONTOWN_DIRECTORY, out_file_name)):
-                with open(os.path.join(HARMONTOWN_DIRECTORY, out_file_name), 'wb') as handle:
-                    for block in request.iter_content(1024):
-                        print('Written %d Kb of %d Kb (%.2f%% complete)' % (
-                            bytes_received / 1024,
-                            size / 1024,
-                            float(bytes_received) / float(size) * 100
-                        ), end="\r")
-                        bytes_received += 1024
-                        handle.write(block)
+            if episode_number > start_episode_number:
+                out_file_name = 'Harmontown - S01E%d.mp4' % episode_number
+                size = int(request.headers['content-length'])
+                bytes_received = 0
+                if not os.path.isfile(os.path.join(HARMONTOWN_DIRECTORY, out_file_name)):
+                    print('No existing file found, downloading')
+                    with open(os.path.join(HARMONTOWN_DIRECTORY, out_file_name), 'wb') as handle:
+                        for block in request.iter_content(1024):
+                            print('Written %d Kb of %d Kb (%.2f%% complete)' % (
+                                bytes_received / 1024,
+                                size / 1024,
+                                float(bytes_received) / float(size) * 100
+                            ), end="\r")
+                            bytes_received += 1024
+                            handle.write(block)
+                else:
+                    print('Existing file found, not downloading')
 
-            with open('last_date', 'w') as handle:
-                handle.write('%s\n%s\n' % (start_date.strftime('%Y-%m-%d'), str(episode_number)))
-            episode_number += 1
+                with open('last_date', 'w') as handle:
+                    handle.write('%s\n%s\n' % (start_date.strftime('%Y-%m-%d'), str(episode_number)))
+                episode_number += 1
+            else:
+                print('Episode is not later than TVDB')
+        else:
+            print('No episode for this date')
         start_date += delta
 
     return EXIT_OK
