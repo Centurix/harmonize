@@ -88,7 +88,7 @@ def main():
                     episode_name = root.xpath('.//EpisodeName')[0].text
                 if len(root.xpath('.//EpisodeNumber')) > 0:
                     episode_number = int(root.xpath('.//EpisodeNumber')[0].text)
-                print('Found TVDB info: %s (%s)' % (episode_name, episode_number))
+                print('Found TVDB info: %s (%s)' % (episode_name.encode('utf-8'), episode_number))
             else:
                 print('No TVDB info')
 
