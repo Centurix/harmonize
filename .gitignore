@@ -2,4 +2,5 @@
 temp/*.mp4
 last_date
 *.log
-
+env
+.downloaded.txt
