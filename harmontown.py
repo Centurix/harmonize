@@ -25,7 +25,7 @@ http://download.harmontown.com/video/harmontown-2015-01-25-final.mp4
 """
 
 HARMONTOWN_URL = 'http://download.harmontown.com/video'
-HARMONTOWN_DIRECTORY = '/media/TV/Clean/Comedy/Harmontown/Season 01'
+HARMONTOWN_DIRECTORY = '/media/TV/Comedy/Harmontown/Season 01'
 HARMONTOWN_START = datetime.date(2016, 4, 10)
 HARMONTOWN_START_EPISODE = 193
 HARMONTOWN_FEED = 'http://www.harmontown.com'
@@ -114,7 +114,7 @@ def main():
                     handle.write('%s\n%s\n' % (start_date.strftime('%Y-%m-%d'), str(episode_number)))
                 episode_number += 1
             else:
-                print('Episode is not later than TVDB')
+                print('Episode %d is not later than TVDB %d' % (episode_number, start_episode_number))
         else:
             print('No episode for this date')
         start_date += delta
