@@ -23,8 +23,7 @@ http://download.harmontown.com/video/harmontown-2014-09-21-final.mp4
 """
 
 HARMONTOWN_URL = 'http://download.harmontown.com/video'
-HARMONTOWN_DIRECTORY = '/home/chris/Desktop'
-# HARMONTOWN_DIRECTORY = '/media/TV/Comedy/Harmontown/Season 01'
+HARMONTOWN_DIRECTORY = '/plex/TV/Comedy/Harmontown/Season 01'
 HARMONTOWN_DOWNLOADED = '.downloaded.txt'
 HARMONTOWN_START = datetime.date(2014, 9, 21)
 HARMONTOWN_EPISODE_NUMBER = 117
