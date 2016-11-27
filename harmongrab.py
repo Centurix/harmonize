@@ -43,6 +43,8 @@ def main():
         start_date = HARMONTOWN_START
         end_date = datetime.datetime.now().date()
 
+        new_missing_records = ''
+
         while start_date <= end_date:
             filename = 'harmontown-%s-final.mp4' % start_date
             start_date += datetime.timedelta(days=1)
@@ -76,9 +78,10 @@ def main():
                             ), end="\r")
                             bytes_received += 1024
                             handle2.write(block)
+                handle.write(new_missing_records)
                 handle.write('downloaded,%s\r\n' % filename)
             elif start_date < end_date:
-                handle.write('missing,%s\r\n' % filename)
+                new_missing_records += 'missing,%s\r\n' % filename
 
     return EXIT_OK
 
