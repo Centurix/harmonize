@@ -25,8 +25,8 @@ http://download.harmontown.com/video/harmontown-2014-09-21-final.mp4
 HARMONTOWN_URL = 'http://download.harmontown.com/video'
 HARMONTOWN_DIRECTORY = '/plex/TV/Comedy/Harmontown/Season 01'
 HARMONTOWN_DOWNLOADED = '.downloaded.txt'
-HARMONTOWN_START = datetime.date(2014, 9, 21)
-HARMONTOWN_EPISODE_NUMBER = 117
+HARMONTOWN_START = datetime.date(2014, 11, 1)
+HARMONTOWN_EPISODE_NUMBER = 126
 
 
 def main():
@@ -48,12 +48,15 @@ def main():
             start_date += datetime.timedelta(days=1)
 
             if 'downloaded,%s\r\n' % filename in downloaded_episodes:
+                print('Found downloaded episode %d, skipping' % current_episode_number)
                 current_episode_number += 1
                 continue
 
             if 'missing,%s\r\n' % filename in downloaded_episodes:
+                print('No recorded episode on %s' % start_date)
                 continue
 
+            print('No previous check record, testing for %s' % filename)
             request = requests.get('%s/%s' % (HARMONTOWN_URL, filename), stream=True)
 
             if request.ok:
