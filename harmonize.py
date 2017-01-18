@@ -17,16 +17,16 @@ EXIT_OTHER_ERROR = 1
 EXIT_PARAM_ERROR = 2
 
 HARMONTOWN_URL = 'http://download.harmontown.com/video'
-HARMONTOWN_DIRECTORY = '/plex/TV/Comedy/Harmontown/Season 01'
-# HARMONTOWN_DIRECTORY = '/home/chris/Desktop'
+#HARMONTOWN_DIRECTORY = '/plex/TV/Comedy/Harmontown/Season 01'
+HARMONTOWN_DIRECTORY = '/home/chris/Desktop'
 
 # http://download.harmontown.com/video/harmontown-2017-01-15-final.mp4
 
 
 def last_episode():
-    highest_episode = 126  # The first regular video episode available online, 2014-11-01
+    highest_episode = 116  # The first regular video episode available online, 2014-11-01
     year = 2014
-    month = 11
+    month = 9
     day = 1
 
     # Get the last episode downloaded, must be a relationship between the date and the episode number somehow
@@ -56,15 +56,16 @@ def main():
             print('Output file: %s' % out_file_name)
             size = int(request.headers['content-length'])
             bytes_received = 0
-            with open(os.path.join(HARMONTOWN_DIRECTORY, out_file_name), 'wb') as handle:
-                for block in request.iter_content(1024):
-                    print('Written %d Kb of %d Kb (%.2f%% complete)' % (
-                        bytes_received / 1024,
-                        size / 1024,
-                        float(bytes_received) / float(size) * 100
-                    ), end="\r")
-                    bytes_received += 1024
-                    handle.write(block)
+            if not os.path.isfile(os.path.join(HARMONTOWN_DIRECTORY, out_file_name)):
+                with open(os.path.join(HARMONTOWN_DIRECTORY, out_file_name), 'wb') as handle:
+                    for block in request.iter_content(1024):
+                        print('Written %d Kb of %d Kb (%.2f%% complete)' % (
+                            bytes_received / 1024,
+                            size / 1024,
+                            float(bytes_received) / float(size) * 100
+                        ), end="\r")
+                        bytes_received += 1024
+                        handle.write(block)
 
         last_date += datetime.timedelta(days=1)
 
