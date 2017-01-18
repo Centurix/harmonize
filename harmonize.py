@@ -47,12 +47,13 @@ def main():
     end_date = datetime.datetime.now().date()
     last_date = last[1]
     last_date += datetime.timedelta(days=1)
+    last_episode = last[0] + 1
     while last_date <= end_date:
         file_name = 'harmontown-%s-final.mp4' % last_date
         request = requests.get('%s/%s' % (HARMONTOWN_URL, file_name), stream=True)
         if request.ok:
             print('Found %s' % file_name)
-            out_file_name = 'Harmontown - S01E%d - %s.mp4' % (last[0] + 1, last_date)
+            out_file_name = 'Harmontown - S01E%d - %s.mp4' % (last_episode, last_date)
             print('Output file: %s' % out_file_name)
             size = int(request.headers['content-length'])
             bytes_received = 0
@@ -66,6 +67,7 @@ def main():
                         ), end="\r")
                         bytes_received += 1024
                         handle.write(block)
+                last_episode += 1
 
         last_date += datetime.timedelta(days=1)
 
