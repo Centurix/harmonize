@@ -17,8 +17,8 @@ EXIT_OTHER_ERROR = 1
 EXIT_PARAM_ERROR = 2
 
 HARMONTOWN_URL = 'http://download.harmontown.com/video'
-#HARMONTOWN_DIRECTORY = '/plex/TV/Comedy/Harmontown/Season 01'
-HARMONTOWN_DIRECTORY = '/home/chris/Desktop'
+HARMONTOWN_DIRECTORY = '/plex/TV/Comedy/Harmontown/Season 01'
+#HARMONTOWN_DIRECTORY = '/home/chris/Desktop'
 
 # http://download.harmontown.com/video/harmontown-2017-01-15-final.mp4
 
