@@ -5,6 +5,7 @@ import sys
 import datetime
 import requests
 import os
+import pprint
 
 __description__ = 'Harmongrab.'
 __author__ = 'Chris Read'
@@ -38,6 +39,11 @@ def main():
 
     with open(HARMONTOWN_DOWNLOADED, 'r+') as handle:
         downloaded_episodes = handle.readlines()
+
+    # Read the last episode downloaded
+    if len(downloaded_episodes) > 0:
+        last_episode = downloaded_episodes[-1]
+
 
     with open(HARMONTOWN_DOWNLOADED, 'a') as handle:
         start_date = HARMONTOWN_START
