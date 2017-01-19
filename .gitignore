@@ -4,3 +4,5 @@ last_date
 *.log
 env
 .downloaded.txt
+*.cfg
+!example.cfg

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import sys
@@ -6,6 +6,30 @@ import os
 import re
 import datetime
 import requests
+import ConfigParser
+
+"""
+Harmonize - Harmontown downloading script.
+
+Set this up with a cron job or some other scheduling tool, copy example.cfg to harmonize.cfg. Edit and change your
+settings for the destination folder. This script will automatically scan for and download video episodes of Harmontown.
+
+Currently this script is setup to make Plex compatible filenames:
+
+Harmontown - S01E117 - 2014-09-21.mp4
+
+The date is included here to make this script much simpler, otherwise we're fiddling with Wordpress feeds and
+thetvdb.com queries, which prior versions of this script did...
+
+Season and episode naming follows thetvdb.com naming. Everything appears in season 1. Should really be by year but
+whatever.
+
+This script just concentrates on downloading the 'standard' definition files, not the HQ ones that sometimes appear.
+
+Uses Python 2.x, but could probably survive a quick upgrade using the newer configparser library
+
+I've only tested this under Linux, should work in Windows, YMMV
+"""
 
 __description__ = 'Harmonize.'
 __author__ = 'Chris Read'
@@ -16,60 +40,66 @@ EXIT_OK = 0
 EXIT_OTHER_ERROR = 1
 EXIT_PARAM_ERROR = 2
 
-HARMONTOWN_URL = 'http://download.harmontown.com/video'
-HARMONTOWN_DIRECTORY = '/plex/TV/Comedy/Harmontown/Season 01'
-#HARMONTOWN_DIRECTORY = '/home/chris/Desktop'
+ONE_DAY = datetime.timedelta(days=1)
 
-# http://download.harmontown.com/video/harmontown-2017-01-15-final.mp4
+config = ConfigParser.SafeConfigParser({'url': 'http://download.harmontown.com/video', 'destination': 'temp'})
+config.read('harmonize.cfg')
+
+HARMONTOWN_URL = config.get('DEFAULT', 'url')
+HARMONTOWN_DIRECTORY = config.get('DEFAULT', 'destination')
+
+BLOCK_READ_SIZE = 1024
 
 
 def last_episode():
-    highest_episode = 116  # The first regular video episode available online, 2014-11-01
-    year = 2014
-    month = 9
-    day = 1
+    """
+    Scan for existing Harmontown episodes, find the latest one by file name, not file date and return it
+    :return: Tuple of the last episode details
+    """
+    highest_episode = 116  # The one before the first regular video episode available online
+    highest_date = datetime.date(2014, 9, 1)
 
-    # Get the last episode downloaded, must be a relationship between the date and the episode number somehow
     for filename in os.listdir(HARMONTOWN_DIRECTORY):
         matches = re.match('Harmontown - S01E(\d+) - (\d+)-(\d+)-(\d+)\.mp4', filename)
         if matches and int(matches.group(1)) > highest_episode:
             highest_episode = int(matches.group(1))
-            year = int(matches.group(2))
-            month = int(matches.group(3))
-            day = int(matches.group(4))
+            highest_date = datetime.date(
+                int(matches.group(2)),
+                int(matches.group(3)),
+                int(matches.group(4))
+            )
 
-    return highest_episode, datetime.date(year, month, day)
+    return highest_episode, highest_date
 
 
 def main():
-    last = last_episode()
-    # Find the latest download from the site
+    last_episode_number, last_date = last_episode()
+
+    last_episode_number += 1
+    last_date += ONE_DAY
     end_date = datetime.datetime.now().date()
-    last_date = last[1]
-    last_date += datetime.timedelta(days=1)
-    last_episode = last[0] + 1
+
     while last_date <= end_date:
         file_name = 'harmontown-%s-final.mp4' % last_date
         request = requests.get('%s/%s' % (HARMONTOWN_URL, file_name), stream=True)
         if request.ok:
-            print('Found %s' % file_name)
-            out_file_name = 'Harmontown - S01E%d - %s.mp4' % (last_episode, last_date)
-            print('Output file: %s' % out_file_name)
+            dest_file_name = 'Harmontown - S01E%d - %s.mp4' % (last_episode_number, last_date)
             size = int(request.headers['content-length'])
             bytes_received = 0
-            if not os.path.isfile(os.path.join(HARMONTOWN_DIRECTORY, out_file_name)):
-                with open(os.path.join(HARMONTOWN_DIRECTORY, out_file_name), 'wb') as handle:
-                    for block in request.iter_content(1024):
+            print('Found %s, saving video to: %s' % (file_name, dest_file_name))
+            with open(os.path.join(HARMONTOWN_DIRECTORY, dest_file_name), 'wb') as handle:
+                for block in request.iter_content(BLOCK_READ_SIZE):
+                    if block:
                         print('Written %d Kb of %d Kb (%.2f%% complete)' % (
                             bytes_received / 1024,
                             size / 1024,
                             float(bytes_received) / float(size) * 100
                         ), end="\r")
-                        bytes_received += 1024
+                        bytes_received += BLOCK_READ_SIZE
                         handle.write(block)
-                last_episode += 1
+            last_episode_number += 1
 
-        last_date += datetime.timedelta(days=1)
+        last_date += ONE_DAY
 
     return EXIT_OK
 
