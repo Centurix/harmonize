@@ -81,8 +81,16 @@ def main():
 
     while last_date <= end_date:
         file_name = 'harmontown-%s-final.mp4' % last_date
+        file_name_hq = 'harmontown-%s-h265.mp4' % last_date
         request = requests.get('%s/%s' % (HARMONTOWN_URL, file_name), stream=True)
+
         if request.ok:
+            if config.get('DEFAULT', 'hq') == 'true':
+                hq_test = requests.get('%s/%s' % (HARMONTOWN_URL, file_name_hq), stream=True)
+                if hq_test.ok:
+                    request = hq_test
+                    file_name = file_name_hq
+
             dest_file_name = 'Harmontown - S01E%d - %s.mp4' % (last_episode_number, last_date)
             size = int(request.headers['content-length'])
             bytes_received = 0
