@@ -13,7 +13,7 @@ thetvdb.com queries, which prior versions of this script did...
 Season and episode naming follows thetvdb.com naming. Everything appears in season 1. Should really be by year but
 whatever.
 
-This script just concentrates on downloading the 'standard' definition files, not the HQ ones that sometimes appear.
+There's a setting to turn the downloading of HQ videos on and off.
 
 Uses Python 2.x, but could probably survive a quick upgrade using the newer configparser library
 
