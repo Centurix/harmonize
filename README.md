@@ -20,3 +20,5 @@ Uses Python 2.x, but could probably survive a quick upgrade using the newer conf
 I've only tested this under Linux, should work in Windows, YMMV
 
 Included copies of older scripts which do funky things with feeds and thetvdb.com queries.
+
+**To use this, please ensure you have a paid subscription to the Harmontown podcast. $5 if you don't want to peel carrots**
