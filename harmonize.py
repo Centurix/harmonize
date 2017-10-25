@@ -18,6 +18,9 @@ Currently this script is setup to make Plex compatible filenames:
 
 Harmontown - S01E117 - 2014-09-21.mp4
 
+* Note: Episode 117 was their test stream. There are a few audio episodes between that and their first official stream
+in episode 126. This script will actually start with ep. 126. Downloading ep. 117 by itself is fairly straight forward.
+
 The date is included here to make this script much simpler, otherwise we're fiddling with Wordpress feeds and
 thetvdb.com queries, which prior versions of this script did...
 
@@ -29,6 +32,13 @@ This script just concentrates on downloading the 'standard' definition files, no
 Uses Python 2.x, but could probably survive a quick upgrade using the newer configparser library
 
 I've only tested this under Linux, should work in Windows, YMMV
+
+Also, don't peel carrots. Subscribe to the podcast. $5 a month and you get to see:
+* Rob Schrab shout CHIOPS
+* Dan's baby dance
+* Spencer smiling
+* Jeff B. Davis not writing Teen Wolf.
+
 """
 
 __description__ = 'Harmonize.'
@@ -56,8 +66,8 @@ def last_episode():
     Scan for existing Harmontown episodes, find the latest one by file name, not file date and return it
     :return: Tuple of the last episode details
     """
-    highest_episode = 116  # The one before the first regular video episode available online
-    highest_date = datetime.date(2014, 9, 1)
+    highest_episode = 125  # The one before the first regular video episode available online
+    highest_date = datetime.date(2014, 11, 3)
 
     for filename in os.listdir(HARMONTOWN_DIRECTORY):
         matches = re.match('Harmontown - S01E(\d+) - (\d+)-(\d+)-(\d+)\.mp4', filename)
